@@ -1,2 +1,2 @@
 # knowledge_base
-# RAG, LangChain
+RAG, LangChain

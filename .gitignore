@@ -1,0 +1,28 @@
+# Игнорируем виртуальное окружение
+venv/
+.env
+
+# Кэш Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Лог-файлы и временные файлы
+*.log
+*.tmp
+*.swp
+*.swo
+.DS_Store
+
+# Конфигурации IDE
+.vscode/
+.idea/
+*.iml
+
+# Библиотеки и зависимости
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
