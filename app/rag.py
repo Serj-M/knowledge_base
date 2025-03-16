@@ -13,11 +13,10 @@ load_dotenv()
 # Получаем переменные окружения
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 
-
-LANGSMITH_TRACING="true"
+LANGSMITH_TRACING=True
 LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
 LANGSMITH_API_KEY=LANGSMITH_API_KEY
-LANGSMITH_PROJECT="knowledge_base"
+LANGSMITH_PROJECT="pr-majestic-decency-69"
 
 # подключаем модель
 llm = ChatOllama(

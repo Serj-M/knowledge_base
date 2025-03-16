@@ -1,8 +1,10 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile, Form
 from pydantic import BaseModel
+from typing import Annotated
 
 from app.question import handler
+from app.question_file import handler_file
 
 app = FastAPI()
 
@@ -16,9 +18,31 @@ class HumanMessage(BaseModel):
     human_message: str
 
 @app.post("/question")
-async def question(params: HumanMessage):
+async def question(params: HumanMessage) -> dict:
     human_message = params.human_message
-    return await handler(human_message)
+    response: str = await handler(human_message)
+    result = {
+        "question": human_message,
+        "answer": response
+    }
+    return result
+
+
+# endpoint for question with file
+@app.post("/question_with_file")
+async def upload_question_with_file(
+    question: str = Form(..., description="Текст вопроса"), 
+    file: UploadFile = File(..., description="Загружаемый файл")
+) -> dict:
+    response: str = await handler_file(question, file)
+    result = {
+        "question": question,
+        "answer": response,
+        "filename": file.filename
+    }
+    return result
+
+
 
 
 # fastapi dev app/main.py

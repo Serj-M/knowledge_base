@@ -15,46 +15,35 @@ from app.rag import llm, vector_store, preamble, embeddings
 
 
 # Создаем сообщение для ИИ
-async def handler(human_message: str):
+async def handler(human_message: str) -> str:
     # file_path = ("docs/Хакатон 2_описание задания.pdf")
     # loader = PyPDFLoader(file_path)
     # pages = []
     # async for page in loader.alazy_load():
     #     pages.append(page)
     loader = DirectoryLoader("docs", show_progress=True, use_multithreading=True)
-    # pages = loader.load()
-    pages = []
-    async for page in loader.alazy_load():
-        pages.append(page)
-
-    # объединяем документы элементы массива а первом элементе
-    for i in range(1, len(pages)):
-        pages[0].page_content += pages[i].page_content
-
-    # удалить все элементы массива кроме первого
-    pages = pages[:1]
-    print(pages[0].page_content)
+    pages = loader.load()
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     all_splits = text_splitter.split_documents(pages)
     _ = vector_store.add_documents(documents=all_splits)
 
-    vectorstore = Chroma.from_documents(documents=all_splits, embedding=embeddings)
+    # vectorstore = Chroma.from_documents(documents=all_splits, embedding=embeddings)
 
-    template = """You are an assistant for question-answering tasks.
-    Use the following pieces of retrieved context to answer the question.
-    If you don't know the answer, just say that you don't know. Keep the answer concise.
-    Gives answers in RUSSIAN LANGUAGE!
+    # template = """You are an assistant for question-answering tasks.
+    # Use the following pieces of retrieved context to answer the question.
+    # If you don't know the answer, just say that you don't know. Keep the answer concise.
+    # Gives answers in RUSSIAN LANGUAGE!
 
-    <context>
-    {context}
-    </context>
+    # <context>
+    # {context}
+    # </context>
 
-    Answer the following question:
+    # Answer the following question:
 
-    {question}"""
+    # {question}"""
 
-    prompt = ChatPromptTemplate.from_template(template)
+    # prompt = ChatPromptTemplate.from_template(template)
 
     # chain = (
     #     RunnablePassthrough.assign(context=lambda input: format_docs(input["context"]))
@@ -62,29 +51,25 @@ async def handler(human_message: str):
     #     | llm 
     #     | StrOutputParser()
     # )
-
     # docs = vectorstore.similarity_search(human_message)
+    # result = chain.invoke({"context": docs, "question": human_message})
 
-    retriever = vectorstore.as_retriever()
+    # retriever = vectorstore.as_retriever()
+    # qa_chain = (
+    #     {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    #     | prompt
+    #     | llm
+    #     | StrOutputParser()
+    # )
+    # result = qa_chain.invoke(human_message)
+    # return result
 
-    qa_chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
-        | prompt
-        | llm
-        | StrOutputParser()
-    )
+    graph_builder = StateGraph(State).add_sequence([retrieve, generate])
+    graph_builder.add_edge(START, "retrieve")
+    graph = graph_builder.compile()
 
-    # Run
-    # response_message = chain.invoke({"context": docs, "question": human_message})
-    response_message = qa_chain.invoke(human_message)
-
-    # graph_builder = StateGraph(State).add_sequence([retrieve, generate])
-    # graph_builder.add_edge(START, "retrieve")
-    # graph = graph_builder.compile()
-
-    # result = await graph.ainvoke({"question": human_message})
-    # return result["answer"]
-    return response_message
+    result = await graph.ainvoke({"question": human_message})
+    return result["answer"]
 
 
 # Преобразовать загруженные документы в строки, объединяя их содержимое, игнорируя метаданные
