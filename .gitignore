@@ -26,3 +26,7 @@ build/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
+
+*.crt
+
+docs_exemples/
