@@ -11,7 +11,7 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"It`s": "AI Ida"}
+    return "Привет! Это Ида. Я здесь, что бы помочь с документацией."
 
 
 class HumanMessage(BaseModel):
