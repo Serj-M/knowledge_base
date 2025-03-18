@@ -15,7 +15,7 @@ def read_root():
 
 
 class HumanMessage(BaseModel):
-    human_message: str
+    human_message: str = Field(..., description="Текст вопроса")
 
 @app.post("/question")
 async def question(params: HumanMessage) -> dict:
