@@ -16,16 +16,18 @@ load_dotenv()
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 
 # Устанавливаем переменные окружения
-os.environ["LANGSMITH_TRACING"] = "true"
-os.environ["LANGSMITH_API_KEY"] = LANGSMITH_API_KEY
-os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
-os.environ["LANGSMITH_PROJECT"] = "pr-majestic-decency-69"
+if (not os.environ.get("LANGSMITH_TRACING") 
+    or not os.environ.get("LANGSMITH_API_KEY") 
+    or not os.environ.get("LANGSMITH_ENDPOINT") 
+    or not os.environ.get("LANGSMITH_PROJECT")
+):
+    os.environ["LANGSMITH_TRACING"] = "true"
+    os.environ["LANGSMITH_API_KEY"] = LANGSMITH_API_KEY
+    os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
+    os.environ["LANGSMITH_PROJECT"] = "pr-majestic-decency-69"
 
 # подключаем модель
-llm = ChatOllama(
-    model="llama3.1",
-    temperature=1
-)
+llm = ChatOllama(model="llama3.1", temperature=1)
 
 # подключаем эмбеддинги для индексации данных перед записью в векторную БД
 embeddings = OllamaEmbeddings(model="llama3.1")
