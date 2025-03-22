@@ -15,6 +15,7 @@ load_dotenv()
 # Получаем переменные окружения
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 
+
 # Устанавливаем переменные окружения
 if (not os.environ.get("LANGSMITH_TRACING") 
     or not os.environ.get("LANGSMITH_API_KEY") 
@@ -25,6 +26,18 @@ if (not os.environ.get("LANGSMITH_TRACING")
     os.environ["LANGSMITH_API_KEY"] = LANGSMITH_API_KEY
     os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
     os.environ["LANGSMITH_PROJECT"] = "pr-majestic-decency-69"
+
+# HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+# os.environ["HUGGINGFACEHUB_API_TOKEN"] = HUGGINGFACEHUB_API_TOKEN
+# from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
+# hf = HuggingFaceEndpoint(
+#     repo_id="microsoft/Phi-3-mini-4k-instruct",
+#     task="text-generation",
+#     max_new_tokens=512,
+#     do_sample=False,
+#     repetition_penalty=1.03,
+# )
+# llm = ChatHuggingFace(llm=hf, verbose=True)
 
 # подключаем модель
 llm = ChatOllama(model="llama3.1", temperature=1)
