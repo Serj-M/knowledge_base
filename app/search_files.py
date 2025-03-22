@@ -27,7 +27,7 @@ es = AsyncElasticsearch(
 )
 
 
-async def handler_search(query: str, tags: list[str] | None, year: str | None) -> list:
+async def handler_search(query: str, tags: list[str] | None, year: str | None, is_active: bool) -> list:
     clauses = []
     filters = []
     if query:
@@ -54,6 +54,11 @@ async def handler_search(query: str, tags: list[str] | None, year: str | None) -
             "term": {"created_at": year}
         })
     
+    if is_active:
+        filters.append({
+            "term": {"is_active": is_active}
+        })
+
     search_query = {"query": {"bool": {"must": clauses, "filter": filters}}}
     
     if not await es.indices.exists(index=index):
@@ -66,7 +71,8 @@ async def handler_search(query: str, tags: list[str] | None, year: str | None) -
             "id": hit["_id"], 
             "filename": hit["_source"].get("filename", ""), 
             "tags": hit["_source"].get("tags", ""),
-            "created_at": hit["_source"].get("created_at", "")
+            "created_at": hit["_source"].get("created_at", ""),
+            "is_active": hit["_source"].get("is_active", "")
         } for hit in hits]
     }
     
@@ -91,13 +97,16 @@ mapping = {
             "created_at": {
                 "type": "keyword"
             },
+            "is_active": {
+                "type": "boolean"
+            },
         }
     }
 }
 
 
 # Добавление документа в Elasticsearch
-async def handler_upload_file(file: UploadFile, tags: list[str] | None) -> dict:
+async def handler_upload_file(file: UploadFile, tags: list[str] | None, is_active: bool = True) -> dict:
     file_id = str(uuid.uuid4())  # Генерация ID
 
     content = await file.read()
@@ -111,7 +120,8 @@ async def handler_upload_file(file: UploadFile, tags: list[str] | None) -> dict:
         "filename": file_name,
         "content": text_doc,  # Текст файла
         "tags": tags if tags is not None else [],
-        "created_at": str(datetime.datetime.now().year)
+        "created_at": str(datetime.datetime.now().year),
+        "is_active": is_active
     }
 
     if not await es.indices.exists(index=index):

@@ -47,11 +47,12 @@ class SearchRequest(BaseModel):
     query: str = Field(..., description="Поисковый запрос по имени файла или содержимому", max_length=300)
     tags: list[str] | None = Field(..., description="Тег документа для точного поиска", max_length=30)
     year: str | None = Field(default=None, description="Год создания файла", max_length=4)
+    is_active: bool = Field(default=True, description="Флаг активности документа")
 
 # Поиск файлов в Elasticsearch с учетом фильтрации по тегам и году создания.
 @app.post("/search_files")
 async def search_files(request: SearchRequest) -> dict:
-    response: list = await handler_search(request.query, request.tags, request.year)
+    response: list = await handler_search(request.query, request.tags, request.year, request.is_active)
     result = {
         "files": response
     }
@@ -62,9 +63,10 @@ async def search_files(request: SearchRequest) -> dict:
 @app.post("/es_upload")
 async def upload_file(
     file: UploadFile = File(..., description="Загружаемый файл"),
-    tags: list[str] | None = Form(default=None, description="Тэги документа через запятую")
+    tags: list[str] | None = Form(default=None, description="Тэги документа через запятую"),
+    is_active: bool = Form(default=True, description="Флаг активности документа")
 ) -> dict:
-    return await handler_upload_file(file, tags)
+    return await handler_upload_file(file, tags, is_active)
 
 
 
