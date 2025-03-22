@@ -9,8 +9,9 @@ from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from langchain.prompts import PromptTemplate
 
-from app.rag import llm, vector_store, preamble, embeddings
+from app.rag import llm, vector_store, embeddings, State, get_template # preamble
 
 
 
@@ -76,11 +77,9 @@ async def handler(human_message: str) -> str:
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-
-class State(TypedDict):
-    question: str
-    context: List[Document]
-    answer: str
+def get_employee_position() -> str:
+    # определение роли пользователя из учётной записи портала
+    return "Программист"
 
 
 def retrieve(state: State):
@@ -89,7 +88,12 @@ def retrieve(state: State):
 
 
 def generate(state: State):
-    docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-    messages = preamble.invoke({"question": state["question"], "context": docs_content})
+    docs_content: str = "\n\n".join(doc.page_content for doc in state["context"])
+    employee_position: str = get_employee_position()
+    template: str = get_template(employee_position)
+    print(f"Prompt: {template}")
+    preamble: PromptTemplate = PromptTemplate.from_template(template)
+    messages = preamble.invoke(
+        {"question": state["question"], "context": docs_content, "employee_position": employee_position})
     response = llm.invoke(messages)
     return {"answer": response.content}

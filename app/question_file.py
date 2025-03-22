@@ -6,8 +6,9 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from fastapi import UploadFile
 from langchain_community.document_loaders import DirectoryLoader
+from langchain.prompts import PromptTemplate
 
-from app.rag import llm, vector_store, preamble
+from app.rag import llm, vector_store, State, get_template # preamble
 
 
 
@@ -44,10 +45,9 @@ async def handler_file(question: str, file: UploadFile) -> str:
     return result["answer"]
 
 
-class State(TypedDict):
-    question: str
-    context: List[Document]
-    answer: str
+def get_employee_position() -> str:
+    # определение роли пользователя из учётной записи портала
+    return "Программист"
 
 
 # Получаем данные из векторной БД
@@ -55,9 +55,15 @@ def retrieve(state: State):
     retrieved_docs = vector_store.similarity_search(state["question"])
     return {"context": retrieved_docs}
 
+
 # Обрабатываем данные в локальной llm
 def generate(state: State):
-    docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-    messages = preamble.invoke({"question": state["question"], "context": docs_content})
+    docs_content: str = "\n\n".join(doc.page_content for doc in state["context"])
+    employee_position: str = get_employee_position()
+    template: str = get_template(employee_position)
+    print(f"Prompt: {template}")
+    preamble: PromptTemplate = PromptTemplate.from_template(template)
+    messages = preamble.invoke(
+        {"question": state["question"], "context": docs_content, "employee_position": employee_position})
     response = llm.invoke(messages)
     return {"answer": response.content}

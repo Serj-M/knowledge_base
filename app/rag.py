@@ -1,8 +1,10 @@
 import os
+from typing_extensions import List, TypedDict
 from dotenv import load_dotenv
 from langchain_ollama import ChatOllama
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
+from langchain_core.documents import Document
 from langchain import hub
 from langchain.prompts import PromptTemplate
 
@@ -31,18 +33,27 @@ embeddings = OllamaEmbeddings(model="llama3.1")
 # подключаем векторную БД ChromaDB
 vector_store = Chroma(embedding_function=embeddings)
 
+class State(TypedDict):
+    question: str
+    context: List[Document]
+    answer: str
+    employee_position: str
 
 # Получаем текущий промпт
 prompt = hub.pull("rlm/rag-prompt")
 
-template = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question.
-If you don't know the answer, just say that you don't know. Keep the answer concise.
-Gives answers in RUSSIAN LANGUAGE!
+def get_template(employee_position: str) -> str:
+    result = """You are an assistant for question-answering tasks. 
+    Use the following pieces of retrieved context to answer the question.
+    If you don't know the answer, just say that you don't know. Keep the answer concise.
+    In your answer, keep in mind that the person you are answering holds a position as a {employee_position} at a research institute.
+    Gives answers in RUSSIAN LANGUAGE!
 
-{context}
+    {context}
 
-Question: {question}
+    Question: {question}
 
-Helpful Answer:"""
+    Helpful Answer:"""
+    return result
 
-preamble = PromptTemplate.from_template(template)
+# preamble = PromptTemplate.from_template(template)
