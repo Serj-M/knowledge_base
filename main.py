@@ -3,6 +3,7 @@ from fastapi import FastAPI, File, UploadFile, Form, Query
 from pydantic import BaseModel, Field
 
 from app.question import handler
+from app.question2 import handler_with_memory
 from app.question_file import handler_file
 from app.search_files import handler_search, handler_upload_file
 
