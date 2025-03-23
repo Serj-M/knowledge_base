@@ -7,6 +7,7 @@ from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain import hub
 from langchain.prompts import PromptTemplate
+from langchain_core.vectorstores import InMemoryVectorStore
 
 
 # Загружаем переменные из .env
@@ -47,6 +48,8 @@ embeddings = OllamaEmbeddings(model="llama3.1")
 
 # подключаем векторную БД ChromaDB
 vector_store = Chroma(embedding_function=embeddings)
+# в качестве временного хранилища используем оперативную память
+in_memory_store = InMemoryVectorStore(embeddings)
 
 class State(TypedDict):
     question: str

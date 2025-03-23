@@ -8,7 +8,7 @@ from fastapi import UploadFile
 from langchain_community.document_loaders import DirectoryLoader
 from langchain.prompts import PromptTemplate
 
-from app.rag import llm, vector_store, State, get_template # preamble
+from app.rag import llm, vector_store, in_memory_store, State, get_template # preamble
 
 
 
@@ -34,7 +34,7 @@ async def handler_file(question: str, file: UploadFile) -> str:
     all_splits = text_splitter.split_documents(pages)
 
     # Добавляем данные в векторную БД
-    _ = vector_store.add_documents(documents=all_splits)
+    _ = in_memory_store.add_documents(documents=all_splits)
 
     # Создаем граф с зданиями для обработки ИИ
     graph_builder = StateGraph(State).add_sequence([retrieve, generate])
@@ -52,7 +52,7 @@ def get_employee_position() -> str:
 
 # Получаем данные из векторной БД
 def retrieve(state: State):
-    retrieved_docs = vector_store.similarity_search(state["question"])
+    retrieved_docs = in_memory_store.similarity_search(state["question"])
     return {"context": retrieved_docs}
 
 
