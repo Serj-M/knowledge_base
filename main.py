@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, Form, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from app.question import handler
@@ -9,6 +10,15 @@ from app.search_files import handler_search, handler_upload_file
 
 app = FastAPI()
 
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+    expose_headers=['*']
+)
 
 @app.get("/")
 def read_root():
@@ -71,8 +81,8 @@ async def upload_file(
 
 
 
-# fastapi dev app/main.py
-# uvicorn app.main:app --reload
+# fastapi dev main.py
+# uvicorn main:app --reload
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
