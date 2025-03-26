@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Формы ввода с вкладками</title>
+
+  <!-- Подключение шрифтов -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Подключение Font Awesome для иконок -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* Общие стили */
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif; /* Основной шрифт */
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Заголовки */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Open Sans', sans-serif; /* Шрифт для заголовков */
+      font-weight: 700;
+    }
+
+    /* Стили для сайдбара */
+    .sidebar {
+      width: 250px;
+      background-color: #f4f4f4;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar .logo img {
+      width: 50%; /* Уменьшаем размер логотипа в два раза */
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .sidebar .user-info {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .sidebar .user-info .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+    }
+
+    .sidebar .menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar .menu li {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-family: 'Roboto', sans-serif; /* Шрифт для пунктов меню */
+      border-radius: 5px;
+    }
+
+    .sidebar .menu li:hover {
+      background-color: #e0e0e0;
+    }
+
+    .sidebar .menu li.active {
+      background-color: #d1e7fd;
+      font-weight: bold;
+    }
+
+    .sidebar .menu li.active::before {
+      content: '';
+      display: inline-block;
+      width: 5px;
+      height: 100%;
+      background-color: red; /* Красная подсветка */
+      margin-right: 10px;
+    }
+
+    .sidebar .menu li i {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+
+    /* Верхний бар */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffffff;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      top: 0;
+      left: 250px;
+      right: 0;
+      z-index: 1000;
+    }
+
+    
+
+    /* Модальное окно истории обращений */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 5px;
+      width: 80%;
+      max-width: 600px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .close-modal {
+      cursor: pointer;
+    }
+
+    /* Стили для основного контента */
+    .main-content {
+      margin-top: 60px;
+      flex-grow: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Заголовок "Чем могу сегодня помочь вам?" */
+    .main-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    /* Стили для вкладок */
+    .tab-container {
+      position:relative;
+      margin: 20px;
+      max-width: 650px;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      top: 45%;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: -1px;
+    }
+
+    .tab-button {
+      padding: 12px 25px;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-size: 16px;
+      font-family: 'Roboto', sans-serif; /* Шрифт для кнопок вкладок */
+    }
+
+    .tab-button.active-tab {
+      background: white;
+      border-color: #ccc;
+      border-radius: 5px 5px 0 0;
+      font-weight: bold;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 0 5px 5px 5px;
+      background: white;
+      font-family: 'Roboto', sans-serif; /* Шрифт для содержимого вкладок */
+    }
+
+    .tab-content.active-tab {
+      display: block;
+    }
+
+    /* Общие стили форм */
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+      font-size: 16px;
+      font-family: 'Roboto', sans-serif; /* Шрифт для текстовых полей */
+    }
+
+    /* Кнопка отправки */
+    .submit-button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-family: 'Roboto', sans-serif; /* Шрифт для кнопки отправки */
+    }
+
+    .submit-button:hover {
+      background-color: #45a049;
+    }
+
+    /* Ответ сервера */
+    .response {
+      margin-top: 15px;
+      font-family: 'Roboto', sans-serif; /* Шрифт для ответов */
+    }
+    /* Верхняя навигационная панель */
+  .top-navbar {
+    position: fixed;
+    top: 0;
+    left: 250px;
+    right: 0;
+    height: 60px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 20px;
+  }
+
+  /* Стили для поиска */
+  .search-container {
+    position: relative;
+    width: 400px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 10px 35px 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 14px;
+  }
+
+  .search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+  }
+
+  /* Стили для правой части */
+  .nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+    padding: 8px;
+    transition: color 0.3s;
+  }
+
+  .icon-button:hover {
+    color: #007bff;
+  }
+
+  .logout-button {
+    background: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.3s;
+  }
+
+  .logout-button:hover {
+    background: #c82333;
+  }
+  
+  .documents-list {
+    display: grid;
+    gap: 15px;
+  }
+
+  .document-card {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: box-shadow 0.3s;
+  }
+
+  .document-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .document-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .document-year {
+    color: #666;
+    font-size: 0.9em;
+  }
+
+  .document-description {
+    color: #444;
+    margin-bottom: 10px;
+  }
+
+  .document-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .document-tag {
+    background: #e3f2fd;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+  }
+
+  .download-link {
+    color: #007bff;
+    text-decoration: none;
+  }
+  .history-button{
+    left:50%;
+    cursor: pointer; /* Указатель появляется при наведении курсора */
+    text-decoration: underline; /* Подчёркивание добавляет визуальное сходство со ссылкой */
+    text-align:center;
+  }
+  </style>
+</head>
+<body>
+  <div class="top-navbar">
+    <div class="nav-container">
+      <!-- Левая часть с поиском -->
+      <div class="nav-left">
+        <div class="search-container">
+          <input type="text" placeholder="Поиск по платформе..." class="search-input">
+          <i class="fas fa-search search-icon"></i>
+        </div>
+      </div>
+  
+      <!-- Правая часть с иконками -->
+      <div class="nav-right">
+        <div class="nav-icons">
+          <button class="icon-button">
+            <i class="fas fa-star"></i>
+          </button>
+          <button class="icon-button">
+            <i class="fas fa-bell"></i>
+          </button>
+          <button class="logout-button" onclick="logout()">
+            Выход <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Левый бар -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="https://komanda.vniizht.ru/file/9/4/94c8b3fdcc347beac6fa4ca5ab9fa21b.svg" alt="Логотип">
+    </div>
+    <div class="user-info">
+      <img class="avatar" src="https://komanda.vniizht.ru/file/b/b/bb1ce6b7c0d5b4ecd3f7f00515603c53_fb8536ba1aa2245f241ad7fa62ad448a.jpg?sharedToken=4ef468032782" alt="Аватар пользователя">
+      <p>Привет, Артём!</p>
+    </div>
+    <nav class="menu">
+      <ul>
+        <li role="menuitem" aria-current="page"><i class="fas fa-home"></i> Главная страница</li>
+        <li role="menuitem"><i class="fas fa-user"></i> Личный кабинет</li>
+        <li role="menuitem"><i class="fas fa-book"></i> Библиотека</li>
+        <li role="menuitem"><i class="fas fa-star"></i> Звёзды</li>
+        <li role="menuitem" class="active"><i class="fas fa-users"></i> Моя команда</li>
+        <li role="menuitem"><i class="fas fa-address-card"></i> Справочник сотрудника</li>
+        <li role="menuitem"><i class="fas fa-comments"></i> Сообщества</li>
+        <li role="menuitem"><i class="fas fa-blog"></i> Блоги</li>
+        <li role="menuitem"><i class="fas fa-newspaper"></i> Новости</li>
+        <li role="menuitem"><i class="fas fa-birthday-cake"></i> Дни рождения</li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Основной контент -->
+  <div class="main-content">
+    <h1 class="main-title">Чем могу сегодня помочь вам?</h1>
+    <a class="history-button" onclick="openHistory()">История обращений</a>
+    <div class="tab-container">
+      <div class="tabs">
+        <button class="tab-button active-tab" onclick="openTab(event, 'question')">Задать вопрос</button>
+        <button class="tab-button" onclick="openTab(event, 'analyze')">Проанализировать документ</button>
+        <button class="tab-button" onclick="openTab(event, 'search')">Поиск документов</button>
+      </div>
+      <!-- Вкладка 1: Задать вопрос -->
+      <div id="question" class="tab-content active-tab">
+        <h2>Задать вопрос</h2>
+        <div class="input-group">
+          <textarea id="questionInput" rows="4" placeholder="Чем я могу вам помочь?"></textarea>
+          <button type="button" class="submit-button" onclick="submitQuestion()">Отправить</button>
+        </div>
+        <div id="questionResponse" class="response"></div>
+      </div>
+      <!-- Вкладка 2: Проанализировать документ -->
+      <div id="analyze" class="tab-content">
+        <h2>Проанализировать документ</h2>
+        <h4>Документ не будет сохранён в базу</h4>
+        <div class="input-group">
+          <textarea id="documentQuestion" rows="4" placeholder="Чем я могу вам помочь?"></textarea>
+          <input type="file" id="documentUpload">
+          <button type="button" class="submit-button" onclick="submitDocument()">Отправить</button>
+        </div>
+        <div id="documentResponse" class="response"></div>
+      </div>
+      <!-- Вкладка 3: Поиск документа -->
+      <div id="search" class="tab-content">
+        <h2>Поиск документа</h2>
+        <div class="input-group">
+          <textarea id="searchQuery" rows="2" placeholder="Чем я могу вам помочь?"></textarea>
+          <label for="yearInput">Год:</label>
+          <input type="number" id="yearInput" min="1990" max="2030" value=null>
+          <label for="tagsSelect">Теги:</label>
+          <select id="tagsSelect">
+            <option value=null></option>
+            <option value="ТЗ">ТЗ</option>
+            <option value="Решение">Решение</option>
+            <option value="Концепция">Концепция</option>
+            <option value="Положение">Положение</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <input type="checkbox" id="actual" checked>
+          <label for="actual">Только актуальные</label>
+          <button type="button" class="submit-button" onclick="submitSearch()">Найти</button>
+
+        </div>
+        <div id="searchResponse" class="response">
+          <div class="documents-list">
+            <!-- Пример документа -->
+            <div class="document-card" >
+              <div class="document-header">
+                <h3>Название документа</h3>
+                <span class="document-year">2025</span>
+              </div>
+              <p class="document-description">Описание документа...</p>
+              <div class="document-meta">
+                <span class="document-tag">Тег</span>
+                <a href="#" class="download-link">Скачать последнюю версию</a>
+              </div>
+              <button onclick="showDocument(1)" class="tab-button">Комментарии и версии</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Модальное окно истории обращений -->
+  <div id="historyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">История обращений</span>
+        <span class="close-modal" onclick="closeHistory()">×</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Дата обращения</th>
+            <th>Текст запроса</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2025-03-22</td>
+            <td>Пример 1</td>
+          </tr>
+          <tr>
+            <td>2025-03-21</td>
+            <td>Пример 2</td>
+          </tr>
+          <tr>
+            <td>2025-03-20</td>
+            <td>Пример 3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Функция для переключения вкладок
+    function openTab(evt, tabName) {
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabButtons.forEach(button => button.classList.remove('active-tab'));
+      tabContents.forEach(content => content.style.display = 'none');
+
+      evt.currentTarget.classList.add('active-tab');
+      document.getElementById(tabName).style.display = 'block';
+    }
+
+    // Отправка вопроса
+    async function submitQuestion() {
+            const question = document.getElementById("questionInput").value;
+            const responseContainer = document.getElementById("questionResponse");
+
+            try {
+              if(question==""){
+                throw new Error("Не указан запрос");
+              }
+			    // TODO добавить проверку, что question не пустая строка
+                const response = await fetch('http://127.0.0.1:8000/question', {
+                    method: 'POST',
+                    headers: {
+                        'accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        human_message: question
+                    })
+                });
+
+                const data = await response.json();
+                responseContainer.innerHTML = `<p>Ответ: ${data.answer}</p>`;
+            } catch (error) {
+                responseContainer.innerHTML = `Ошибка: ${error.message}`;
+            }
+        }
+
+        // Отправка документа для анализа
+        async function submitDocument() {
+            const question = document.getElementById("documentQuestion").value;
+            const file = document.getElementById("documentUpload").files[0];
+            const responseContainer = document.getElementById("documentResponse");
+			// TODO добавить проверку, что question не пустая строка и выбран файл 
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('question', question);
+
+            try {
+              if(question==""){
+                throw new Error("Не указан запрос");
+              }
+              if(file ==null){
+                throw new Error("Не указан файл");
+              }
+                const response = await fetch('http://127.0.0.1:8000/question_with_file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                responseContainer.innerHTML = `<p>Результат анализа: ${data.answer}</p>`;
+            } catch (error) {
+                responseContainer.innerHTML = `Ошибка: ${error.message}`;
+            }
+        }
+
+    /*// Функция отправки поиска
+    function submitSearch() {
+      const query = document.getElementById('searchQuery').value;
+      if (query.trim() !== '') {
+        alert(`Поиск по запросу: "${query}" выполнен!`);
+      } else {
+        alert('Пожалуйста, введите текст для поиска.');
+      }
+    }*/
+
+    // Функция открытия истории обращений
+    function openHistory() {
+      document.getElementById('historyModal').style.display = 'block';
+    }
+
+    // Функция закрытия модального окна истории
+    function closeHistory() {
+      document.getElementById('historyModal').style.display = 'none';
+    }
+    async function submitSearch() {
+  let query = document.getElementById('searchQuery').value;
+  let year = document.getElementById('yearInput').value;
+  year = !year ? null : year;
+  const actual = document.getElementById('actual').checked;
+  ///TODO: проверить что checkbox true/false
+  let tags = document.getElementById('tagsSelect').value;
+  tags = !tags || tags == 'null' ? null : [tags];
+  try {
+    const response = await fetch('http://127.0.0.1:8000/search_files', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({query, year, actual, tags})
+    });
+    
+    const data = await response.json();
+    showSearchResults(data.files.results);
+  } catch (error) {
+    console.error('Ошибка поиска:', error);
+  }
+}
+
+function showSearchResults(documents) {
+  const container = document.getElementById('searchResponse');
+  container.innerHTML = documents.map(doc => `
+    <div class="document-card" onclick="showDocument(${doc.id})">
+      <div class="document-header">
+        <h3>${doc.filename}</h3>
+        <span class="document-year">${doc.created_at}</span>
+      </div>
+      <p class="document-description">${'Описание отсутствует'}</p>
+      <div class="document-meta">
+        ${doc.tags.map(tag => `<span class="document-tag">${tag}</span>`).join('')}
+        <a href="${doc.url}" class="download-link">Скачать</a>
+      </div>
+      <button onclick="showDocument(1)" class="tab-button">Комментарии и версии</button>
+    </div>
+  `).join('');
+}
+
+function showDocument(docId) {
+  window.location.href = `document.html?id=${docId}`;
+}
+  </script>
+</body>
+</html>

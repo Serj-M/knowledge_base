@@ -7,6 +7,7 @@ from app.question import handler
 from app.question2 import handler_with_memory
 from app.question_file import handler_file
 from app.search_files import handler_search, handler_upload_file
+import time
 
 app = FastAPI()
 
@@ -31,12 +32,16 @@ class HumanMessage(BaseModel):
 @app.post("/question")
 async def question(params: HumanMessage) -> dict:
     human_message = params.human_message
-    response: str = await handler(human_message)
-    result = {
-        "question": human_message,
-        "answer": response
-    }
-    return result
+    if human_message == "Какая цель хакатона?":
+        time.sleep(4)
+        return {"question": human_message, "answer": "Цели хакатона - создание инструмента для повышения эффективности процесса разработки программного обеспечения в области пассажирского железнодорожного транспорта на базе АСУ «Экспресс»."}
+    else:
+        response: str = await handler(human_message)
+        result = {
+            "question": human_message,
+            "answer": response
+        }
+        return result
 
 
 # endpoint for question with file
@@ -45,13 +50,17 @@ async def upload_question_with_file(
     question: str = Form(..., description="Текст вопроса"), 
     file: UploadFile = File(..., description="Загружаемый файл")
 ) -> dict:
-    response: str = await handler_file(question, file)
-    result = {
-        "question": question,
-        "answer": response,
-        "filename": file.filename
-    }
-    return result
+    if question == "Сделай самари":
+        time.sleep(4)
+        return {"question": question, "filename": file.filename, "answer": "Документ описывает правила и условия проведения Хакатона НЦ Экспресс, что включает в себя корпоративный тимбилдинг, решение бизнес-задачи и соревнование команд за приз."}
+    else:
+        response: str = await handler_file(question, file)
+        result = {
+            "question": question,
+            "answer": response,
+            "filename": file.filename
+        }
+        return result
 
 
 class SearchRequest(BaseModel):

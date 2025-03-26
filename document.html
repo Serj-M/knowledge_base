@@ -1,0 +1,199 @@
+<!-- document.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Информация о документе</title>
+  <style>
+    .document-container {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    /* Стили для основной таблицы документа */
+    .doc-info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .doc-info-table td {
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .doc-info-table td:first-child {
+      width: 30%;
+      background-color: #f8f9fa;
+      font-weight: 500;
+    }
+
+    /* Стили для таблицы версий */
+    .versions-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .versions-table th,
+    .versions-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .versions-table th {
+      background-color: #f8f9fa;
+      font-weight: 500;
+    }
+
+    .versions-table tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    .version-action {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .version-action:hover {
+      text-decoration: underline;
+    }
+
+    /* Стили для тегов */
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      background-color: #e3f2fd;
+      border-radius: 4px;
+      margin: 2px;
+      font-size: 0.9em;
+    }
+    .comment-author {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .comment-date {
+      color: #666;
+      font-size: 0.9em;
+    }
+    .comments-list {
+      margin-top: 30px;
+    }
+
+    .comment-item {
+      padding: 15px;
+      border: 1px solid #eee;
+      margin-bottom: 10px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="document-container">
+    <!-- Основная информация о документе -->
+    <table class="doc-info-table">
+      <tr>
+        <td>Название документа</td>
+        <td id="docTitle">Хакатон 2_описание задания.docx</td>
+      </tr>
+      <tr>
+        <td>Год выпуска</td>
+        <td id="docYear">2025</td>
+      </tr>
+      <tr>
+        <td>Теги</td>
+        <td>
+          <span class="tag">ТЗ</span>
+        </td>
+      </tr>
+      <tr>
+        <td>Текущая версия</td>
+        <td>v1 от 26.03.2025</td>
+      </tr>
+    </table>
+
+    <!-- Таблица с историей версий -->
+    <h2>История изменений документа</h2>
+    <table class="versions-table">
+      <thead>
+        <tr>
+          <th>Версия</th>
+          <th>Дата изменения</th>
+          <th>Автор изменений</th>
+          <th>Описание изменений</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>v1</td>
+          <td>26.03.2025</td>
+          <td>Макшаков В.С.</td>
+          <td>Описание и требования</td>
+          <td><a href="#" class="version-action">Скачать</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="comments-list">
+      <h2>Комментарии</h2>
+      <div class="comment-item">
+        <div class="comment-header">
+          <span class="comment-author">Макшаков С.В.</span>
+          <span class="comment-date">26.03.2025</span>
+        </div>
+        <p class="comment-text">Тестовый комментарий!</p>
+      </div>
+      <button class="tab-button">Добавить комментарии</button>
+  </div>
+
+  <script>
+    function loadDocumentData() {
+      // Пример загрузки данных с сервера
+      const docData = {
+        title: "Хакатон 2_описание задания.docx",
+        year: 2025,
+        tags: ["ТЗ"],
+        versions: [
+          {
+            version: "v2.1.4",
+            date: "15.04.2024",
+            author: "Иванов А.С.",
+            description: "Обновление раздела по пожарной безопасности",
+            url: "/docs/safety_v2.1.4.pdf"
+          },
+          // ... другие версии
+        ]
+      };
+
+      // Заполнение основной информации
+      document.getElementById('docTitle').textContent = docData.title;
+      document.getElementById('docYear').textContent = docData.year;
+      
+      // Заполнение тегов
+      const tagsContainer = document.querySelector('.doc-info-table td:nth-child(4)');
+      tagsContainer.innerHTML = docData.tags.map(tag => 
+        `<span class="tag">${tag}</span>`
+      ).join('');
+
+      // Заполнение версий
+      const versionsBody = document.querySelector('.versions-table tbody');
+      versionsBody.innerHTML = docData.versions.map(version => `
+        <tr>
+          <td>${version.version}</td>
+          <td>${version.date}</td>
+          <td>${version.author}</td>
+          <td>${version.description}</td>
+          <td><a href="${version.url}" class="version-action">Скачать</a></td>
+        </tr>
+      `).join('');
+    }
+
+    window.onload = loadDocumentData;
+  </script>
+</body>
+</html>
