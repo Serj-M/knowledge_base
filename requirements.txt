@@ -31,3 +31,12 @@ fastapi
 uvicorn
 pydantic
 elasticsearch
+langchain
+langchain-text-splitters
+langchain-community
+langgraph
+langchain-chroma
+langsmith
+langchain-ollama
+ollama
+pypdf
