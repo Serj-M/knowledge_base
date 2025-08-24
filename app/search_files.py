@@ -19,15 +19,21 @@ DOCUMENTS_PASSWORD=os.getenv("DOCUMENTS_PASSWORD")
 DOCUMENTS_CERT=os.getenv("DOCUMENTS_CERT")
 index='hackathon'
 
-es = AsyncElasticsearch(
-    hosts=DOCUMENTS_HOST,
-    basic_auth=(DOCUMENTS_LOGIN, DOCUMENTS_PASSWORD),
-    ca_certs=DOCUMENTS_CERT,
-    timeout=300
-)
+# Initialize Elasticsearch connection if host is available
+es = None
+if DOCUMENTS_HOST:
+    es = AsyncElasticsearch(
+        hosts=DOCUMENTS_HOST,
+        basic_auth=(DOCUMENTS_LOGIN, DOCUMENTS_PASSWORD),
+        ca_certs=DOCUMENTS_CERT,
+        request_timeout=300
+    )
 
 
 async def handler_search(query: str, tags: list[str] | None, year: str | None, is_active: bool) -> list:
+    if not es:
+        return {"results": [], "message": "Elasticsearch not configured"}
+    
     clauses = []
     filters = []
     if query:
@@ -61,20 +67,23 @@ async def handler_search(query: str, tags: list[str] | None, year: str | None, i
 
     search_query = {"query": {"bool": {"must": clauses, "filter": filters}}}
     
-    if not await es.indices.exists(index=index):
-        await es.indices.create(index=index, body=mapping)
+    try:
+        if not await es.indices.exists(index=index):
+            await es.indices.create(index=index, body=mapping)
 
-    response = await es.search(index=index, body=search_query)
-    hits = response.get("hits", {}).get("hits", [])
-    return {
-        "results": [{
-            "id": hit["_id"], 
-            "filename": hit["_source"].get("filename", ""), 
-            "tags": hit["_source"].get("tags", ""),
-            "created_at": hit["_source"].get("created_at", ""),
-            "is_active": hit["_source"].get("is_active", "")
-        } for hit in hits]
-    }
+        response = await es.search(index=index, body=search_query)
+        hits = response.get("hits", {}).get("hits", [])
+        return {
+            "results": [{
+                "id": hit["_id"], 
+                "filename": hit["_source"].get("filename", ""), 
+                "tags": hit["_source"].get("tags", ""),
+                "created_at": hit["_source"].get("created_at", ""),
+                "is_active": hit["_source"].get("is_active", "")
+            } for hit in hits]
+        }
+    except Exception as e:
+        return {"results": [], "error": str(e)}
     
 
 mapping = {
@@ -107,6 +116,9 @@ mapping = {
 
 # Добавление документа в Elasticsearch
 async def handler_upload_file(file: UploadFile, tags: list[str] | None, is_active: bool = True) -> dict:
+    if not es:
+        return {"message": "Elasticsearch not configured", "file_id": None}
+    
     file_id = str(uuid.uuid4())  # Генерация ID
 
     content = await file.read()
@@ -124,8 +136,11 @@ async def handler_upload_file(file: UploadFile, tags: list[str] | None, is_activ
         "is_active": is_active
     }
 
-    if not await es.indices.exists(index=index):
-        await es.indices.create(index=index, body=mapping)
+    try:
+        if not await es.indices.exists(index=index):
+            await es.indices.create(index=index, body=mapping)
 
-    await es.index(index=index, id=file_id, document=document)
-    return {"message": "Файл загружен", "file_id": file_id}
+        await es.index(index=index, id=file_id, document=document)
+        return {"message": "Файл загружен", "file_id": file_id}
+    except Exception as e:
+        return {"message": f"Error uploading file: {str(e)}", "file_id": None}

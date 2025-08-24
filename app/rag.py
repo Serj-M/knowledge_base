@@ -23,8 +23,8 @@ if (not os.environ.get("LANGSMITH_TRACING")
     or not os.environ.get("LANGSMITH_ENDPOINT") 
     or not os.environ.get("LANGSMITH_PROJECT")
 ):
-    os.environ["LANGSMITH_TRACING"] = "true"
-    os.environ["LANGSMITH_API_KEY"] = LANGSMITH_API_KEY
+    os.environ["LANGSMITH_TRACING"] = "false"  # Disable tracing for offline mode
+    os.environ["LANGSMITH_API_KEY"] = LANGSMITH_API_KEY or "dummy-key"
     os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
     os.environ["LANGSMITH_PROJECT"] = "pr-majestic-decency-69"
 
@@ -57,8 +57,20 @@ class State(TypedDict):
     answer: str
     employee_position: str
 
-# Получаем текущий промпт
-prompt = hub.pull("rlm/rag-prompt")
+# Получаем текущий промпт (offline fallback)
+try:
+    prompt = hub.pull("rlm/rag-prompt")
+except Exception:
+    # Fallback prompt if LangSmith is not available
+    prompt = PromptTemplate.from_template("""You are an assistant for question-answering tasks. 
+Use the following pieces of retrieved context to answer the question.
+If you don't know the answer, just say that you don't know. Keep the answer concise.
+
+Context: {context}
+
+Question: {question}
+
+Answer:""")
 
 def get_template(employee_position: str) -> str:
     result = """You are an assistant for question-answering tasks. 
