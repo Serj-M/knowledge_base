@@ -1,3 +1,6 @@
+# Тестовый комментарий для проверки pull request
+
+import uvicorn
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
